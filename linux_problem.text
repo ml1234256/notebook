@@ -1,0 +1,12 @@
+(1)
+查看当前使用的内核:
+uname -r
+查询已有内核版本号：
+sudo dpkg --get-selections | grep linux
+更改内核启动:
+sudo gedit /etc/default/grub
+将GRUB_DEFAULT改为对应要启动的内核版本，如GRUB_DEFAULT="1>4"
+更新grub:
+sudo updata-grub
+
+(2)动态查看GPU使用率：watch nvidia-smi

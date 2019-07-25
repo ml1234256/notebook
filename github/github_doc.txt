@@ -1,0 +1,39 @@
+git add .: 把工作区的所有变化，(就是你的所有改动)，都添加到 版本库/暂存区。
+git commit -m "提交时说明信息": 更进一步提交，并说明提交log。
+git push: 把版本库的所有更新内容， 都推送到远程服务器。(推代码/推上去)
+git pull: 把代码从远程服务器拉取到本地。(拉代码)
+
+(1)将本地新项目上传至github：
+1.在github网上新建项目仓库
+2.进入本地项目文件夹，开teminal,输入
+   git init (初始化仓库)
+   git add . 
+   git commit -m "commit discription"
+   git remote add origin https://github.com/ml1234256/deblurgan-pytorch.git(连接github仓库)
+   git push -u origin magister
+
+(2)删除github上项目仓库中的文件或删除已经add的文件:进入本地项目文件夹，开teminal,输入
+   git pull origin master（更新本地仓库）
+   dir(查看当前目录下文件）
+   git rm -r --cached FileName
+   git commit -m "delete discription"
+   git push -u origin master
+
+(3)第一次使用git推代码需要设置用户名和邮箱：
+   git config --global user.email "you@qq.com"
+   git config --global user.name "Your Name"
+
+报错：
+(1)fatal: unable to auto-detect email address
+cd .git
+vim config
+在最后添加
+［user］
+ email＝your email
+ name＝your name
+ 
+ (2)refusing to merge unrelated histories（拒绝合并不相关的历史）
+ 原因在于本地仓库和远程仓库实际上是独立的两个仓库,解决:
+ git pull origin master --allow-unrelated-histories
+ 
+
