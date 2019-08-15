@@ -1,4 +1,4 @@
-一 pytorch模板
+﻿一 pytorch模板
 (1) torch.backends.cudnn.benchmark = true
 设置这个 flag 可以让内置的 cuDNN 的 auto-tuner 自动寻找最适合当前配置的高效算法，来达到优化运行效率的问题,放在代码前面。
 遵循以下准则：
@@ -104,6 +104,7 @@ np.random.uniform(a, b, [size_x, size_y]) 生成[a, b)范围内的随机浮点�
 np.random.randint(a, b, [size_x, size_y]) 生成[a, b)范围内的随机整数矩阵，服从均匀分布
 np.random.randn(size_x, size_y) 生成标准正态分布矩阵
 np.random.rand(size_x, size_y) 生成0-1均匀分布矩阵
+np.random.random([size])生成0-1均匀分布矩阵
 
 (8)CycleGan与Pix2PixHD 报错处理
 技术原创网址：https://blog.csdn.net/mxs30443/article/details/79793933
