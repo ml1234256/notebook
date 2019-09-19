@@ -1,0 +1,239 @@
+﻿一 pytorch模板
+(1) torch.backends.cudnn.benchmark = true
+设置这个 flag 可以让内置的 cuDNN 的 auto-tuner 自动寻找最适合当前配置的高效算法，来达到优化运行效率的问题,放在代码前面。
+遵循以下准则：
+    1.如果网络的输入数据维度或类型上变化不大，设置 torch.backends.cudnn.benchmark = true 可以增加运行效率；
+    2.如果网络的输入数据在每次 iteration 都变化的话，会导致 cnDNN 每次都会去寻找一遍最优配置，这样反而会降低运行效率
+
+(2)
+nn.parallelss.data_parallel(module, inputs, device_ids=None, output_device=None, dim=0, module_kwargs=None)
+model = torch.nn.DataParallel(module, device_ids=None, output_device=None, dim=0)
+
+(3)
+>>>torch.Tensor(4).fill_(10)
+10
+10
+10
+10
+[torch.FloatTensor of size 4]
+
+(4)PSNR: 峰值信噪比
+
+def PSNR(img1, img2):
+	mse = np.mean( (img1/255. - img2/255.) ** 2 )
+	if mse == 0:
+		return 100
+	PIXEL_MAX = 1
+	return 20 * math.log10(PIXEL_MAX / math.sqrt(mse))
+SSIM:
+
+
+(8)CycleGan与Pix2PixHD 报错处理
+技术原创网址：https://blog.csdn.net/mxs30443/article/details/79793933
+CycleGan的pytorch代码使用了python的visdom的可视化模块，但是在画图的时候回报错误：
+
+    requests.exceptions.ConnectionError: HTTPConnectionPool(host='localhost', port=8097): Max retries exceeded with url: /events (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f19f9a5f0f0>: Failed to establish a new connection: [Errno 111] Connection refused',))
+
+解决方案：
+1、首先在控制台下启动visdom：
+
+    python -m visdom.server
+
+会看到输出：
+
+        Downloading scripts. It might take a while.
+        It's Alive!
+        INFO:root:Application Started
+        You can navigate to http://localhost:8097
+
+不要关闭这个窗口
+2、打开浏览器：
+
+输入网址 http://localhost:8097 就会看到visdom界面
+不要关闭这个界面
+3、然后再运行CycleGan的代码就会看到在浏览器的界面上过会有图像显示,(这时可以关闭浏览器了，但是保持第一步的控制台处于打开状态)
+
+(8)pytorch 加载模型报错Missing key(s) in state_dict，Unexpected key(s) in state_dict：
+查看加载的模型参数结构：
+state_dict = torch.load('./checkpoints/model.pth')
+for k，v in state_dict.items():
+    print(k, v)
+解决方式：
+a.如果保存的模型使用了torch.nn.DataParallel()，则加载模型也要用torch.nn.DataParallel()：
+model = torch.nn.DataParallel(model)
+torch.backends.cudnn.benchmark = True
+b.创建一个没有‘module.’的新字典:
+法1
+state_dict = torch.load('model.pth')
+from collections import OrderedDict
+new_state_dict = OrderedDict()
+for k, V in state_dict.items():
+    name = k[7:] # remove 'module.'
+	new_state_dict[name] = V
+model.load_state_dict(new_state_dict)
+法2
+model.load_state_dict({k.replace('module.', ''):V for k,v in torch.load('model.pth').items()})
+
+二 python
+(1)python:set() 函数创建一个无序不重复元素集，可进行关系测试，删除重复数据，还可以计算交集、差集、并集等。
+   x.mul(y) ，点乘操作
+   x.mm(y) ，矩阵相乘， 矩阵大小需满足： (i, n)x(n, j)
+
+getattr(object, name[, default]):从对象object中获取名称为name的属性，等效与调用object.name
+
+#定义类Student
+>>> class Student:
+    def __init__(self,name):
+        self.name = name
+
+        
+>>> s = Stduent('Aim')
+>>> getattr(s,'name') #等效于调用s.name
+'Aim'
+>>> s.name
+'Aim'
+
+函数第三个参数default为可选参数，如果object中含义name属性，则返回name属性的值，如果没有name属性，则返回default值，如果default未传入值，则报错
+>>> getattr(s,'name') #存在属性name
+'Aim'
+
+>>> getattr(s,'age',6) #不存在属性age，但提供了默认值，返回默认值
+6
+
+>>> getattr(s,'age') #不存在属性age，未提供默认值，调用报错
+Traceback (most recent call last):
+  File "<pyshell#17>", line 1, in <module>
+    getattr(s,'age')
+AttributeError: 'Stduent' object has no attribute 'age'
+
+(2)python随机函数（import random)
+random.uniform(a,b)：生成一个[a,b]范围内的随机浮点数(允许a>=b)
+random.randint(a,b)：生成一个[a,b]范围内的整数
+random.random():生成一个0到1的随机浮点数
+random.choice(sequence)：从序列sequence中随机选取一个元素
+>>> for i in range(5):
+>>>     print(random.randint(0, 9),random.uniform(0, 9), random.random(), random.choice('hellow'), random.choice([1, 2, 3]))
+8 3.6717202992809166 0.4450690594361921 o 2
+7 0.291524162935034 0.2877539670863245 h 2
+7 7.990317605967447 0.22999885193608072 w 2
+3 4.247655650239005 0.07462456472771684 w 2
+8 1.8543564978721014 0.7459599018055564 e 1
+
+random.shuffle()：将一个列表中的元素打乱
+>>> for i in range(5):
+>>>     p = ['a', 'little', 'happy', 'pig']
+>>>     random.shuffle(p)
+>>>     print(p)
+['little', 'a', 'happy', 'pig']
+['a', 'pig', 'little', 'happy']
+['pig', 'little', 'happy', 'a']
+['little', 'happy', 'a', 'pig']
+['a', 'little', 'pig', 'happy']
+
+random.sample(sequence,k)：从序列sequence中随机获取长度为k的片段，不会改变原有序列
+>>> for i in range(5):
+>>>     p = ['a', 'little', 'happy', 'pig']
+>>>     a = random.sample(p, 3)
+>>>     print(p, a)
+['a', 'little', 'happy', 'pig'] ['a', 'happy', 'pig']
+['a', 'little', 'happy', 'pig'] ['little', 'happy', 'a']
+['a', 'little', 'happy', 'pig'] ['a', 'happy', 'little']
+['a', 'little', 'happy', 'pig'] ['happy', 'little', 'a']
+['a', 'little', 'happy', 'pig'] ['little', 'a', 'happy']
+
+random.randrange(a, b, c)：生成从a到b的间隔为c的随机整数
+random.randrange(1,100,2)相当于random.choice(range(1,100,2))
+
+(3)python生成随机矩阵
+import numpy as np
+np.random.uniform(a, b, [size_x, size_y]) 生成[a, b)范围内的随机浮点矩阵，服从均匀分布
+np.random.randint(a, b, [size_x, size_y]) 生成[a, b)范围内的随机整数矩阵，服从均匀分布
+np.random.randn(size_x, size_y) 生成标准正态分布矩阵
+np.random.rand(size_x, size_y) 生成0-1均匀分布矩阵
+np.random.random([size])生成0-1均匀分布矩阵
+
+(4)python 读取txt文件
+# 文件打开地两种方式
+f = open('data.txt', 'r')
+f.close() # 关闭文件
+#为了避免忘记close文件，可使用一下方式
+whith open('data.txt', 'r') as f:
+    s = f.read() #将文件所有内容读取到s中
+	line = f.readline() #读取一行，包括换行符
+	lines = f.readlines() #按行读取全部内容，type(lines):list
+    f.write(str)  # 将str写入文件中
+	
+(5)
+print('222'.__add__('1'))
+>>> 2221
+
+#extend() 函数用于在列表末尾一次性追加另一个序列中的多个值（用新列表扩展原来的列表）
+#list.extend(seq)
+>>> aList = [123, 'xyz', 'zara', 'abc', 123];
+>>> bList = [2009, 'manni'];
+>>> aList.extend(bList)
+>>> print("Extended List : ", aList )
+Extended List :  [123, 'xyz', 'zara', 'abc', 123, 2009, 'manni']
+
+(6)os
+# os.listdir()返回指定路径下地目录和文件名称
+import os
+dirt = './data/'
+for i in os.listdir(dirct):
+    print(i)
+image_list = os.listdir(image_dirct)
+# os.path.isfile() 判断对象是否为文件
+# os.path.isdir() 判断对象是否为目录
+
+>>> str = "00000003210Runoob01230000000"; 
+>>> print(str.strip('0'))  # 去除首尾字符 0
+3210Runoob0123
+>>> str2 = "   Runoob      "  # 去除首尾空格
+>>> print(str2.strip())
+
+Runoob
+
+（7）报错：ValueError: invalid literal for int() with base 10: '10.0'
+# 字符型小数（str(10.0))不能直接转换成int,需先转换成float,再转换成int
+# int(str(10))不会报错
+
+（8）zip()
+zip() 函数用于将可迭代的对象作为参数，将对象中对应的元素打包成一个个元组，然后返回由这些元组组成的对象，这样做的好处是节约了不少的内存。
+我们可以使用 list() 转换来输出列表。
+如果各个迭代器的元素个数不一致，则返回列表长度与最短的对象相同，利用 * 号操作符，可以将元组解压为列表。
+>>> a = [1,2,3]
+>>> b = [4,5,6]
+>>> c = [4,5,6,7,8]
+>>> zipped = zip(a,b)     # 返回一个对象
+>>> zipped
+<zip object at 0x103abc288>
+>>> list(zipped)  # list() 转换为列表
+[(1, 4), (2, 5), (3, 6)]
+>>> list(zip(a,c))              # 元素个数与最短的列表一致
+[(1, 4), (2, 5), (3, 6)]
+ 
+>>> a1, a2 = zip(*zip(a,b))          # 与 zip 相反，zip(*) 可理解为解压，返回二维矩阵式
+>>> list(a1)
+[1, 2, 3]
+>>> list(a2)
+[4, 5, 6]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
